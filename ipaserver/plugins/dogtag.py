@@ -22,6 +22,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from ast import parse
 
 r'''
 
@@ -1402,8 +1403,18 @@ class ra(rabase.rabase, RestClient):
             self.raise_certificate_operation_error('check_request_status',
                                                    detail=http_status)
 
-        parse_result = self.get_parse_result_xml(http_body, parse_check_request_result_xml)
-        request_status = parse_result['request_status']
+        parse_result = None
+        try:
+            parse_result = json.loads(http_body)
+        except json.JSONDecodeError:
+            logger.debug("http_body is not valid JSON, try XML")
+            parse_result = self.get_parse_result_xml(http_body, parse_check_request_result_xml)
+        try:
+            request_status = parse_result['request_status']
+        except KeyError as e:
+            logger.error("Invalid key; valid keys are:")
+            logger.error(parse_result.keys())
+            logger.error(repr(e))
         if request_status != CMS_STATUS_SUCCESS:
             self.raise_certificate_operation_error('check_request_status',
                                                    cms_request_status_to_string(request_status),
@@ -1648,8 +1659,18 @@ class ra(rabase.rabase, RestClient):
             self.raise_certificate_operation_error('revoke_certificate',
                                                    detail=http_status)
 
-        parse_result = self.get_parse_result_xml(http_body, parse_revoke_cert_xml)
-        request_status = parse_result['request_status']
+        parse_result = None
+        try:
+            parse_result = json.loads(http_body)
+        except json.JSONDecodeError:
+            logger.debug("http_body is not valid JSON, try XML")
+            parse_result = self.get_parse_result_xml(http_body, parse_revoke_cert_xml)
+        try:
+            request_status = parse_result['request_status']
+        except KeyError as e:
+            logger.error("Invalid key; valid keys are:")
+            logger.error(parse_result.keys())
+            logger.error(repr(e))            
         if request_status != CMS_STATUS_SUCCESS:
             self.raise_certificate_operation_error('revoke_certificate',
                                                    cms_request_status_to_string(request_status),
@@ -1706,9 +1727,18 @@ class ra(rabase.rabase, RestClient):
             self.raise_certificate_operation_error('take_certificate_off_hold',
                                                    detail=http_status)
 
-
-        parse_result = self.get_parse_result_xml(http_body, parse_unrevoke_cert_xml)
-        request_status = parse_result['request_status']
+        parse_result = None
+        try:
+            parse_result = json.loads(http_body)
+        except json.JSONDecodeError:
+            logger.debug("http_body is not valid JSON, try XML")
+            parse_result = self.get_parse_result_xml(http_body, parse_unrevoke_cert_xml)
+        try:
+            request_status = parse_result['request_status']
+        except KeyError as e:
+            logger.error("Invalid key; valid keys are:")
+            logger.error(parse_result.keys())
+            logger.error(repr(e))
         if request_status != CMS_STATUS_SUCCESS:
             self.raise_certificate_operation_error('take_certificate_off_hold',
                                                    cms_request_status_to_string(request_status),
@@ -1905,9 +1935,19 @@ class ra(rabase.rabase, RestClient):
             self.raise_certificate_operation_error('updateCRL',
                                                    detail=http_status)
 
-        parse_result = self.get_parse_result_xml(http_body,
+        parse_result = None
+        try:
+            parse_result = json.loads(http_body)
+        except json.JSONDecodeError:
+            logger.debug("http_body is not valid JSON, try XML")
+            parse_result = self.get_parse_result_xml(http_body,
                                                  parse_updateCRL_xml)
-        request_status = parse_result['request_status']
+        try:
+            request_status = parse_result['request_status']
+        except KeyError as e:
+            logger.error("Invalid key; valid keys are:")
+            logger.error(parse_result.keys())
+            logger.error(repr(e))
         if request_status != CMS_STATUS_SUCCESS:
             self.raise_certificate_operation_error(
                 'updateCRL',

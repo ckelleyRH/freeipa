@@ -479,16 +479,20 @@ class CertDB:
             raise CertificateOperationError(
                 error=_('Unable to communicate with CMS (status %d)') % http_status)
 
-        # The result is an XML blob. Pull the certificate out of that
-        doc = xml.dom.minidom.parseString(http_body)
-        item_node = doc.getElementsByTagName("b64")
         try:
+            json_body = json.loads(http_body)
+            logger.warn(json_body.keys())
+            cert = json_body['b64']
+        except (json.JSONDecodeError, KeyError):
+            # The result is an XML blob. Pull the certificate out of that
+            doc = xml.dom.minidom.parseString(http_body)
+            item_node = doc.getElementsByTagName("b64")
             try:
                 cert = item_node[0].childNodes[0].data
             except IndexError:
-                raise RuntimeError("Certificate issuance failed")
-        finally:
-            doc.unlink()
+                raise RuntimeError(json_body.keys())
+            finally:
+                doc.unlink()
 
         # base64-decode the result for uniformity
         cert = base64.b64decode(cert)
